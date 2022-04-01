@@ -107,4 +107,4 @@ class SType:
                      (instruction & funct3_mask) >> 12,
                      (instruction & rs1_mask) >> 15,
                      (instruction & rs2_mask) >> 20,
-                     ((instruction & imm11_5_mask) >> 20) + (instruction & imm4_0_mask))
+                     ((instruction & imm11_5_mask) >> 21) + (instruction & imm4_0_mask) >> 7)

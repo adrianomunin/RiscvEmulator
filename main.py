@@ -17,7 +17,7 @@ while(True):
 
     binary_data = int.from_bytes(data, byteorder='little')
 
-    # print(bin(binary_data).replace('0b', '').zfill(32))
+    print("Instrução", bin(binary_data).replace('0b', '').zfill(32))
 
     opcode = binary_data & 0b00000000000000000000000001111111
     #print("OPCODE", bin(opcode).replace('0b', '').zfill(7))

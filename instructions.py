@@ -1,6 +1,5 @@
 
-
-class RType:
+class RType():
 
     OPCODE = [int(0b00000000000000000000000000110011)]
 
@@ -14,15 +13,46 @@ class RType:
 
     def print(self):
         # Imprime os dados da classe
-        print("opcode:", bin(self.opcode).replace('0b', '').zfill(7))
-        print("rd:", bin(self.rd).replace('0b', '').zfill(5))
-        print("rs1:", bin(self.rs1).replace('0b', '').zfill(5))
-        print("rs2:", bin(self.rs2).replace('0b', '').zfill(5))
-        print("funct3:", bin(self.funct3).replace('0b', '').zfill(3))
-        print("funct7:", bin(self.funct7).replace('0b', '').zfill(7))
+        print("\topcode:", bin(self.opcode).replace('0b', '').zfill(7))
+        print("\trd:", bin(self.rd).replace('0b', '').zfill(5))
+        print("\trs1:", bin(self.rs1).replace('0b', '').zfill(5))
+        print("\trs2:", bin(self.rs2).replace('0b', '').zfill(5))
+        print("\tfunct3:", bin(self.funct3).replace('0b', '').zfill(3))
+        print("\tfunct7:", bin(self.funct7).replace('0b', '').zfill(7))
         print("\n")
 
-    @staticmethod
+    def __str__(self):
+        # Retorna a instrução em binário
+        return bin(self.opcode).replace('0b', '').zfill(7) + \
+            bin(self.rd).replace('0b', '').zfill(5) + \
+            bin(self.rs1).replace('0b', '').zfill(5) + \
+            bin(self.rs2).replace('0b', '').zfill(5) + \
+            bin(self.funct3).replace('0b', '').zfill(3) + \
+            bin(self.funct7).replace('0b', '').zfill(7)
+
+    def execute(self, riscv):
+        # Executa a instrução
+        if self.funct3 == 0b000:  # ADD
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + \
+                riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b001:  # SUB
+            riscv.regs[self.rd] = riscv.regs[self.rs1] - riscv.regs[self.rs2]
+        elif self.funct3 == 0b010:  # SLL
+            riscv.regs[self.rd] = riscv.regs[self.rs1] & riscv.regs[self.rs2]
+        elif self.funct3 == 0b011:  # SLT
+            riscv.regs[self.rd] = riscv.regs[self.rs1] | riscv.regs[self.rs2]
+        elif self.funct3 == 0b100:  # SLTU
+            riscv.regs[self.rd] = riscv.regs[self.rs1] ^ riscv.regs[self.rs2]
+        elif self.funct3 == 0b101:  # XOR
+            riscv.regs[self.rd] = riscv.regs[self.rs1] << riscv.regs[self.rs2]
+        elif self.funct3 == 0b110:  # SRL
+            riscv.regs[self.rd] = riscv.regs[self.rs1] >> riscv.regs[self.rs2]
+        elif self.funct3 == 0b111:  # SRA
+            riscv.regs[self.rd] = riscv.regs[self.rs1] >> riscv.regs[self.rs2]
+        else:
+            print("Fatal!! Unknown instruction", self.__str__())
+            exit(-1)
+
     def parse_instruction(instruction):
         # Parseia a instrução e retorna um objeto RType
         opcode_mask = 0b00000000000000000000000001111111
@@ -40,7 +70,7 @@ class RType:
                      (instruction & funct7_mask) >> 25)
 
 
-class IType:
+class IType():
     OPCODE = [int(0b00000000000000000000000000100111),
               int(0b00000000000000000000000000000011),
               int(0b00000000000000000000000000010011)]
@@ -54,12 +84,38 @@ class IType:
 
     def print(self):
         # Imprime os dados da classe
-        print("opcode:", bin(self.opcode).replace('0b', '').zfill(7))
-        print("rd:", bin(self.rd).replace('0b', '').zfill(5))
-        print("rs1:", bin(self.rs1).replace('0b', '').zfill(5))
-        print("funct3:", bin(self.funct3).replace('0b', '').zfill(3))
-        print("imm:", bin(self.imm).replace('0b', '').zfill(12))
+        print("\topcode:", bin(self.opcode).replace('0b', '').zfill(7))
+        print("\trd:", bin(self.rd).replace('0b', '').zfill(5))
+        print("\trs1:", bin(self.rs1).replace('0b', '').zfill(5))
+        print("\tfunct3:", bin(self.funct3).replace('0b', '').zfill(3))
+        print("\timm:", bin(self.imm).replace('0b', '').zfill(12))
         print("\n")
+
+    def __str__(self):
+        # Retorna a instrução em binário
+        return bin(self.opcode).replace('0b', '').zfill(7) + \
+            bin(self.rd).replace('0b', '').zfill(5) + \
+            bin(self.rs1).replace('0b', '').zfill(5) + \
+            bin(self.funct3).replace('0b', '').zfill(3) + \
+            bin(self.imm).replace('0b', '').zfill(12)
+
+    def execute(self, riscv):
+        # Executa a instrução
+        if self.funct3 == 0b000:  # ADDI
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
+        elif self.funct3 == 0b010:  # SLTI
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
+        elif self.funct3 == 0b011:  # SLTIU
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
+        elif self.funct3 == 0b100:  # XORI
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
+        elif self.funct3 == 0b110:  # ORI
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
+        elif self.funct3 == 0b111:  # ANDI
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
+        else:
+            print("Fatal!! Unknown instruction", self.__str__())
+            exit(-1)
 
     @staticmethod
     def parse_instruction(instruction):
@@ -89,11 +145,11 @@ class SType:
 
     def print(self):
         # Imprime os dados da classe
-        print("opcode:", bin(self.opcode).replace('0b', '').zfill(7))
-        print("funct3:", bin(self.funct3).replace('0b', '').zfill(3))
-        print("rs1:", bin(self.rs1).replace('0b', '').zfill(5))
-        print("rs2:", bin(self.rs2).replace('0b', '').zfill(5))
-        print("imm:", bin(self.imm).replace('0b', '').zfill(12))
+        print("\topcode:", bin(self.opcode).replace('0b', '').zfill(7))
+        print("\tfunct3:", bin(self.funct3).replace('0b', '').zfill(3))
+        print("\trs1:", bin(self.rs1).replace('0b', '').zfill(5))
+        print("\trs2:", bin(self.rs2).replace('0b', '').zfill(5))
+        print("\timm:", bin(self.imm).replace('0b', '').zfill(12))
         print("\n")
 
     @ staticmethod
@@ -125,11 +181,11 @@ class BType:
 
     def print(self):
         # Imprime os dados da classe
-        print("opcode:", bin(self.opcode).replace('0b', '').zfill(7))
-        print("rs1:", bin(self.rs1).replace('0b', '').zfill(5))
-        print("rs2:", bin(self.rs2).replace('0b', '').zfill(5))
-        print("funct3:", bin(self.funct3).replace('0b', '').zfill(3))
-        print("imm:", bin(self.imm).replace('0b', '').zfill(12))
+        print("\topcode:", bin(self.opcode).replace('0b', '').zfill(7))
+        print("\trs1:", bin(self.rs1).replace('0b', '').zfill(5))
+        print("\trs2:", bin(self.rs2).replace('0b', '').zfill(5))
+        print("\tfunct3:", bin(self.funct3).replace('0b', '').zfill(3))
+        print("\timm:", bin(self.imm).replace('0b', '').zfill(12))
         print("\n")
 
     @staticmethod
@@ -160,9 +216,9 @@ class UType:
 
     def print(self):
         # Imprime os dados da classe
-        print("opcode:", bin(self.opcode).replace('0b', '').zfill(7))
-        print("rd:", bin(self.rd).replace('0b', '').zfill(5))
-        print("imm:", bin(self.imm).replace('0b', '').zfill(20))
+        print("\topcode:", bin(self.opcode).replace('0b', '').zfill(7))
+        print("\trd:", bin(self.rd).replace('0b', '').zfill(5))
+        print("\timm:", bin(self.imm).replace('0b', '').zfill(20))
         print("\n")
 
     @staticmethod
@@ -187,9 +243,9 @@ class JType:
 
     def print(self):
         # Imprime os dados da classe
-        print("opcode:", bin(self.opcode).replace('0b', '').zfill(7))
-        print("rd:", bin(self.rd).replace('0b', '').zfill(5))
-        print("imm:", bin(self.imm).replace('0b', '').zfill(20))
+        print("\topcode:", bin(self.opcode).replace('0b', '').zfill(7))
+        print("\trd:", bin(self.rd).replace('0b', '').zfill(5))
+        print("\timm:", bin(self.imm).replace('0b', '').zfill(20))
         print("\n")
 
     @staticmethod

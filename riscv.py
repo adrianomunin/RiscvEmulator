@@ -50,8 +50,8 @@ class RISCV:
     # Inicia um programa
     def start(self, filename):
         with open(filename, 'rb') as f:
-            # Le 32 bits
             while True:
+                # Le 32 bits
                 data = f.read(4)
                 if not data:
                     break
@@ -60,13 +60,15 @@ class RISCV:
                 # Caso pc seja -1, o programa começa no endereço 0
                 if self.regs['pc'] == -1:
                     self.regs['pc'] = 0
+                    mem_last = 0
                     # Salva a instrução na memória
                     self.memory[self.regs['pc']] = binary_data
                 else:
-                    self.memory[self.regs['pc']+1] = (binary_data)
+                    self.memory[mem_last+1] = (binary_data)
+                mem_last += 1
 
                 if self.DEBUG:
-                    print("Instrução carregada na memoria: ", bin(
+                    print(f"Instrução carregada na memoria: mem[{mem_last}] ", bin(
                         binary_data).replace('0b', '').zfill(32))
         if(self.regs['pc'] != -1):
             self._run()
@@ -104,32 +106,32 @@ class RISCV:
         if opcode in IType.OPCODE:
             pc = IType.parse_instruction(instruction)
             if self.DEBUG:
-                print("Instrução I-Type")
+                print("\n\tInstrução I-Type")
                 pc.print()
         elif opcode in RType.OPCODE:
-            if self.DEBUG:
-                print("Instrução R-Type")
             pc = RType.parse_instruction(instruction)
-            pc.print()
+            if self.DEBUG:
+                print("\n\tInstrução R-Type")
+                pc.print()
         elif opcode in SType.OPCODE:
             pc = SType.parse_instruction(instruction)
             if self.DEBUG:
-                print("Instrução S-Type")
+                print("\n\tInstrução S-Type")
                 pc.print()
         elif opcode in BType.OPCODE:
             pc = BType.parse_instruction(instruction)
             if self.DEBUG:
-                print("Instrução B-Type")
+                print("\n\tInstrução B-Type")
                 pc.print()
         elif opcode in UType.OPCODE:
             pc = UType.parse_instruction(instruction)
             if self.DEBUG:
-                print("Instrução U-Type")
+                print("\n\tInstrução U-Type")
                 pc.print()
         elif opcode in JType.OPCODE:
             pc = JType.parse_instruction(instruction)
             if self.DEBUG:
-                print("Instrução J-Type")
+                print("\n\tInstrução J-Type")
                 pc.print()
         else:
             print("Fatal!! Unknown instruction", bin(

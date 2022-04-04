@@ -1,4 +1,5 @@
 
+
 class RType():
 
     OPCODE = [int(0b00000000000000000000000000110011)]
@@ -32,23 +33,18 @@ class RType():
 
     def execute(self, riscv):
         # Executa a instrução
-        if self.funct3 == 0b000:  # ADD
+        if self.funct3 == 0b000 and self.funct7 == 0b0000000:  # ADD
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) + x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
             riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + \
                 riscv.regs[f'x{self.rs2}']
-        elif self.funct3 == 0b001:  # SUB
-            riscv.regs[self.rd] = riscv.regs[self.rs1] - riscv.regs[self.rs2]
-        elif self.funct3 == 0b010:  # SLL
-            riscv.regs[self.rd] = riscv.regs[self.rs1] & riscv.regs[self.rs2]
-        elif self.funct3 == 0b011:  # SLT
-            riscv.regs[self.rd] = riscv.regs[self.rs1] | riscv.regs[self.rs2]
-        elif self.funct3 == 0b100:  # SLTU
-            riscv.regs[self.rd] = riscv.regs[self.rs1] ^ riscv.regs[self.rs2]
-        elif self.funct3 == 0b101:  # XOR
-            riscv.regs[self.rd] = riscv.regs[self.rs1] << riscv.regs[self.rs2]
-        elif self.funct3 == 0b110:  # SRL
-            riscv.regs[self.rd] = riscv.regs[self.rs1] >> riscv.regs[self.rs2]
-        elif self.funct3 == 0b111:  # SRA
-            riscv.regs[self.rd] = riscv.regs[self.rs1] >> riscv.regs[self.rs2]
+        elif self.funct3 == 0b000 and self.funct7 == 0b0100000:  # SUB
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
+                riscv.regs[f'x{self.rs2}']
         else:
             print("Fatal!! Unknown instruction", self.__str__())
             exit(-1)
@@ -58,8 +54,8 @@ class RType():
         opcode_mask = 0b00000000000000000000000001111111
         rd_mask = 0b00000000000000000000111110000000
         funct3_mask = 0b00000000000000000111000000000000
-        rs1_mask = 0b00000000000111110000000000000000
-        rs2_mask = 0b00000011111000000000000000000000
+        rs1_mask = 0b00000000000011111000000000000000
+        rs2_mask = 0b00000001111100000000000000000000
         funct7_mask = 0b11111110000000000000000000000000
 
         return RType((instruction & opcode_mask),
@@ -85,10 +81,10 @@ class IType():
     def print(self):
         # Imprime os dados da classe
         print("\topcode:", bin(self.opcode).replace('0b', '').zfill(7))
-        print("\trd:", bin(self.rd).replace('0b', '').zfill(5))
-        print("\trs1:", bin(self.rs1).replace('0b', '').zfill(5))
+        print("\trd:", bin(self.rd).replace('0b', '').zfill(5), self.rd)
+        print("\trs1:", bin(self.rs1).replace('0b', '').zfill(5), self.rs1)
         print("\tfunct3:", bin(self.funct3).replace('0b', '').zfill(3))
-        print("\timm:", bin(self.imm).replace('0b', '').zfill(12))
+        print("\timm:", bin(self.imm).replace('0b', '').zfill(12), self.imm)
         print("\n")
 
     def __str__(self):
@@ -103,16 +99,6 @@ class IType():
         # Executa a instrução
         if self.funct3 == 0b000:  # ADDI
             riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
-        elif self.funct3 == 0b010:  # SLTI
-            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
-        elif self.funct3 == 0b011:  # SLTIU
-            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
-        elif self.funct3 == 0b100:  # XORI
-            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
-        elif self.funct3 == 0b110:  # ORI
-            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
-        elif self.funct3 == 0b111:  # ANDI
-            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + self.imm
         else:
             print("Fatal!! Unknown instruction", self.__str__())
             exit(-1)
@@ -121,9 +107,9 @@ class IType():
     def parse_instruction(instruction):
         opcode_mask = 0b00000000000000000000000001111111
         rd_mask = 0b00000000000000000000111110000000
-        rs1_mask = 0b00000000000111110000000000000000
-        imm_mask = 0b11111111110000000000000000000000
         funct3_mask = 0b00000000000000000111000000000000
+        rs1_mask = 0b00000000000011111000000000000000
+        imm_mask = 0b11111111111100000000000000000000
 
         return IType((instruction & opcode_mask),
                      (instruction & rd_mask) >> 7,
@@ -152,6 +138,9 @@ class SType:
         print("\timm:", bin(self.imm).replace('0b', '').zfill(12))
         print("\n")
 
+    def execute(self, riscv):
+        pass
+
     @ staticmethod
     def parse_instruction(instruction):
         opcode_mask = 0b00000000000000000000000001111111
@@ -178,6 +167,9 @@ class BType:
         self.rs2 = rs2
         self.funct3 = funct3
         self.imm = imm
+
+    def execute(self, riscv):
+        pass
 
     def print(self):
         # Imprime os dados da classe
@@ -221,6 +213,9 @@ class UType:
         print("\timm:", bin(self.imm).replace('0b', '').zfill(20))
         print("\n")
 
+    def execute(self, riscv):
+        pass
+
     @staticmethod
     def parse_instruction(instruction):
         opcode_mask = 0b00000000000000000000000001111111
@@ -247,6 +242,9 @@ class JType:
         print("\trd:", bin(self.rd).replace('0b', '').zfill(5))
         print("\timm:", bin(self.imm).replace('0b', '').zfill(20))
         print("\n")
+
+    def execute(self, riscv):
+        pass
 
     @staticmethod
     def parse_instruction(instruction):

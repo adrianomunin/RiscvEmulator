@@ -45,9 +45,60 @@ class RType():
                     f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
             riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
                 riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b001 and self.funct7 == 0b0000000:  # SLL
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
+                riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b010 and self.funct7 == 0b0000000:  # SLT
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
+                riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b011 and self.funct7 == 0b0000000:  # SLTU
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
+                riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b100 and self.funct7 == 0b0000000:  # XOR
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
+                riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b101 and self.funct7 == 0b0000000:  # SRL
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
+                riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b101 and self.funct7 == 0b0100000:  # SRA
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
+                riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b110 and self.funct7 == 0b0000000:  # OR
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
+                riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b111 and self.funct7 == 0b0000000:  # AND
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
+                riscv.regs[f'x{self.rs2}']
         else:
             print("Fatal!! Unknown instruction", self.__str__())
             exit(-1)
+
+
+
 
     def parse_instruction(instruction):
         # Parseia a instrução e retorna um objeto RType

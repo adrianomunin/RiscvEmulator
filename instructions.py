@@ -45,6 +45,25 @@ class RType():
                     f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
             riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
                 riscv.regs[f'x{self.rs2}']
+
+        elif self.funct3 == 0b101 and self.funct7 == 0b0100000:  # SRAI
+            # SRAI is an arithmetic right shift (the original sign bit is copied into the vacated upper bits).
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) >>> x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] >> riscv.regs[f'x{self.rs2}']
+
+        elif self.funct3 == 0b101 and self.funct7 == 0b0000000:  # SRLI
+            # SRLI is a logical right shift (zeros are shifted into the upper bits)
+            print("To be made...")
+
+        elif self.funct3 == 0b001 and self.funct7 == 0b0000000:  # SLLI
+            # SLLI is a logical left shift (zeros are shifted into the lower bits)
+            if riscv.DEBUG:
+                print(
+                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) << x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] << riscv.regs[f'x{self.rs2}']
+
         else:
             print("Fatal!! Unknown instruction", self.__str__())
             exit(-1)
@@ -66,7 +85,7 @@ class RType():
                      (instruction & funct7_mask) >> 25)
 
 
-class IType():
+class IType:
     OPCODE = [int(0b00000000000000000000000000100111),
               int(0b00000000000000000000000000000011),
               int(0b00000000000000000000000000010011)]
@@ -258,3 +277,4 @@ class JType:
         return JType((instruction & opcode_mask),
                      (instruction & rd_mask) >> 7,
                      ((instruction & imm20_mask) >> 11) + (instruction & imm19_12_mask) + ((instruction & imm11_mask) >> 9) + ((instruction & imm10_1_mask) >> 20))
+

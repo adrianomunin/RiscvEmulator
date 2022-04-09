@@ -247,7 +247,16 @@ class SType:
         print("\n")
 
     def execute(self, riscv):
-        pass
+        # Executa a instrução
+        if self.funct3 == 0b000 and self.opcode == 0b00000000000000000000000000100011:  # SB
+            riscv.memory[signal_extends(12, riscv.regs[self.rs1])] = riscv.regs[
+                                                                         self.rs2] & 0b00000000000000000000000011111111
+
+        elif self.funct3 == 0b001 and self.opcode == 0b00000000000000000000000000100011:  # SH
+            riscv.memory[signal_extends(12, riscv.regs[self.rs1])] = riscv.regs[
+                                                                         self.rs2] & 0b00000000000000001111111111111111
+        elif self.funct3 == 0b010 and self.opcode == 0b00000000000000000000000000100011:  # SW
+            riscv.memory[signal_extends(12, riscv.regs[self.rs1])] = riscv.regs[self.rs2]
 
     @staticmethod
     def parse_instruction(instruction):

@@ -145,8 +145,10 @@ class IType:
     def execute(self, riscv):
         # Executa a instrução
         if self.funct3 == 0b000 and self.opcode == 0b00000000000000000000000000010011:  # ADDI
-            print(f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) + {self.imm}\n")
-            riscv.regs[f"x{self.rd}"] = riscv.regs[f"x{signal_extends(12, self.rs1)}"] + self.imm
+            print(
+                f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) + {self.imm}\n")
+            riscv.regs[f"x{self.rd}"] = riscv.regs[f"x{signal_extends(12, self.rs1)}"] + \
+                self.imm
 
         elif self.funct3 == 0b010 and self.opcode == 0b00000000000000000000000000010011:  # SLTI
             # SLTI (set less than immediate) places the value 1 in register rd if register rs1 is less than the sign-
@@ -168,13 +170,16 @@ class IType:
                 riscv.regs[f"x{self.rd}"] = 0b0
 
         elif self.funct3 == 0b100 and self.opcode == 0b00000000000000000000000000010011:  # XORI
-            riscv.regs[f"x{self.rd}"] = riscv.regs[f"x{self.rs1}"] ^ signal_extends(12, self.imm)
+            riscv.regs[f"x{self.rd}"] = riscv.regs[f"x{self.rs1}"] ^ signal_extends(
+                12, self.imm)
 
         elif self.funct3 == 0b110 and self.opcode == 0b00000000000000000000000000010011:  # ORI
-            riscv.regs[f"x{self.rd}"] = riscv.regs[f"x{self.rs1}"] | signal_extends(12, self.imm)
+            riscv.regs[f"x{self.rd}"] = riscv.regs[f"x{self.rs1}"] | signal_extends(
+                12, self.imm)
 
         elif self.funct3 == 0b111 and self.opcode == 0b00000000000000000000000000010011:  # ANDI
-            riscv.regs[f"x{self.rd}"] = riscv.regs[f"x{self.rs1}"] & signal_extends(12, self.imm)
+            riscv.regs[f"x{self.rd}"] = riscv.regs[f"x{self.rs1}"] & signal_extends(
+                12, self.imm)
 
         elif self.funct3 == 0b001 and self.opcode == 0b00000000000000000000000000010011:  # SLLI
             # SLLI is a logical left shift (zeros are shifted into the lower bits)
@@ -193,31 +198,32 @@ class IType:
         elif self.funct3 == 0b000 and self.opcode == 0b00000000000000000000000000000011:  # LB
             # loads 8 bists from memory
             eightBitsValue = riscv.memory[
-                                 signal_extends(12, riscv.regs[f"x{self.rs1}"])] & 0b00000000000000000000000011111111
+                signal_extends(12, riscv.regs[f"x{self.rs1}"])] & 0b00000000000000000000000011111111
             eightBitsValue = signal_extends(32, eightBitsValue)
             riscv.regs[f"x{self.rd}"] = eightBitsValue
 
         elif self.funct3 == 0b001 and self.opcode == 0b00000000000000000000000000000011:  # LH
             # loads 16 bists from memory
             sixtenBitsValue = riscv.memory[
-                                  signal_extends(12, riscv.regs[f"x{self.rs1}"])] & 0b00000000000000001111111111111111
+                signal_extends(12, riscv.regs[f"x{self.rs1}"])] & 0b00000000000000001111111111111111
             sixtenBitsValue = signal_extends(32, sixtenBitsValue)
             riscv.regs[f"x{self.rd}"] = sixtenBitsValue
 
         elif self.funct3 == 0b010 and self.opcode == 0b00000000000000000000000000000011:  # LW
             # loads 32 bists from memory
-            riscv.regs[f"x{self.rd}"] = riscv.memory[signal_extends(12, riscv.regs[f"x{self.rs1}"])]
+            riscv.regs[f"x{self.rd}"] = riscv.memory[signal_extends(
+                12, riscv.regs[f"x{self.rs1}"])]
 
         elif self.funct3 == 0b100 and self.opcode == 0b00000000000000000000000000000011:  # LBU
             # loads 8 bists from memory with zero extends
             eightBitsValue = riscv.memory[
-                                 signal_extends(12, riscv.regs[f"x{self.rs1}"])] & 0b00000000000000000000000011111111
+                signal_extends(12, riscv.regs[f"x{self.rs1}"])] & 0b00000000000000000000000011111111
             riscv.regs[f"x{self.rd}"] = eightBitsValue
 
         elif self.funct3 == 0b101 and self.opcode == 0b00000000000000000000000000000011:  # LBU
             # loads 16 bists from memory with zero extends
             sixtenBitsValue = riscv.memory[
-                                  signal_extends(12, riscv.regs[f"x{self.rs1}"])] & 0b00000000000000001111111111111111
+                signal_extends(12, riscv.regs[f"x{self.rs1}"])] & 0b00000000000000001111111111111111
             riscv.regs[f"x{self.rd}"] = sixtenBitsValue
 
         elif self.funct3 == 000 and self.opcode == 0b00000000000000000000000001100111:  # JALR
@@ -266,13 +272,14 @@ class SType:
         # Executa a instrução
         if self.funct3 == 0b000 and self.opcode == 0b00000000000000000000000000100011:  # SB
             riscv.memory[signal_extends(12, riscv.regs[f"x{self.rs1}"])] = riscv.regs[
-                                                                               f"x{self.rs2}"] & 0b00000000000000000000000011111111
+                f"x{self.rs2}"] & 0b00000000000000000000000011111111
 
         elif self.funct3 == 0b001 and self.opcode == 0b00000000000000000000000000100011:  # SH
             riscv.memory[signal_extends(12, riscv.regs[f"x{self.rs1}"])] = riscv.regs[
-                                                                               f"x{self.rs2}"] & 0b00000000000000001111111111111111
+                f"x{self.rs2}"] & 0b00000000000000001111111111111111
         elif self.funct3 == 0b010 and self.opcode == 0b00000000000000000000000000100011:  # SW
-            riscv.memory[signal_extends(12, riscv.regs[f"x{self.rs1}"])] = riscv.regs[f"x{self.rs2}"]
+            riscv.memory[signal_extends(
+                12, riscv.regs[f"x{self.rs1}"])] = riscv.regs[f"x{self.rs2}"]
 
     @staticmethod
     def parse_instruction(instruction):

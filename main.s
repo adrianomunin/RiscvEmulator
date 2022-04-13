@@ -4,4 +4,9 @@
 
 test:
 addi x1,x0,0
-beq x1,x0,test
+beq x1,x0,abc
+addi x1,x0,0
+beq x1,x0,abc
+addi x1,x0,0
+beq x1,x0,abc
+abc:

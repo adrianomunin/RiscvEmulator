@@ -74,19 +74,20 @@ class RType:
         rs1 = riscv.regs[f'x{self.rs1}']
         rs2 = riscv.regs[f'x{self.rs2}']
 
-        if self.funct3 == 0b000 and self.funct7 == 0b0000000:  # ADD OK
+        if self.funct3 == 0b000 and self.funct7 == 0b0000000:  # ADD OK    
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + riscv.regs[f'x{self.rs2}']
             if riscv.DEBUG:
-                print(f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) + x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")        
-                riscv.regs[f'x{self.rd}'] = rs1 + rs2
-
+                print(f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) + x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")    
+                
         elif self.funct3 == 0b000 and self.funct7 == 0b0100000:  # SUB OK
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - riscv.regs[f'x{self.rs2}']
             if riscv.DEBUG:
-<<<<<<< HEAD
                 print(f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
-            riscv.regs[f'x{self.rd}'] = rs1 - rs2
 
         elif self.funct3 == 0b001 and self.funct7 == 0b0000000:  # SLL OK
-            riscv.regs[f'x{self.rd}'] = rs1 << rs2 
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] << riscv.regs[f'x{self.rs2}']
+            if riscv.DEBUG:
+                print(f"x{self.rd} ({riscv.regs[f'x{self.rd}']})  = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) << x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
 
         elif self.funct3 == 0b010 and self.funct7 == 0b0000000:  # SLT
             riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
@@ -97,35 +98,30 @@ class RType:
                 riscv.regs[f'x{self.rs2}']
 
         elif self.funct3 == 0b100 and self.funct7 == 0b0000000:  # XOR OK
-            riscv.regs[f'x{self.rd}'] = rs1 ^ rs2
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] ^ riscv.regs[f'x{self.rs2}']
             if riscv.DEBUG:
                 print(f"x{self.rd} ({riscv.regs[f'x{self.rd}']})  = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) ^ x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
 
         elif self.funct3 == 0b101 and self.funct7 == 0b0000000:  # SRL OK
-            riscv.regs[f'x{self.rd}'] = rs1 >> rs2 
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] >> riscv.regs[f'x{self.rs2}'] 
+            if riscv.DEBUG:
+                print(f"x{self.rd} ({riscv.regs[f'x{self.rd}']})  = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) >> x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
 
         elif self.funct3 == 0b101 and self.funct7 == 0b0100000:  # SRA
-=======
-                print(
-                    f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) + x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
-            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + \
-                                        riscv.regs[f'x{self.rs2}']
-        elif self.funct3 == 0b000 and self.funct7 == 0b0100000:  # SUB
->>>>>>> dcfe85859bf1e83db086cc2080c2000910e30ae2
             if riscv.DEBUG:
                 print(f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
             riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
-<<<<<<< HEAD
                 riscv.regs[f'x{self.rs2}']
 
         elif self.funct3 == 0b110 and self.funct7 == 0b0000000:  # OR OK
-            riscv.regs[f'x{self.rd}'] = rs1 | rs2
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] | riscv.regs[f'x{self.rs2}']
+            if riscv.DEBUG:
+                print(f"x{self.rd} ({riscv.regs[f'x{self.rd}']})  = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) OR x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
 
         elif self.funct3 == 0b111 and self.funct7 == 0b0000000:  # AND OK 
-            riscv.regs[f'x{self.rd}'] = rs1 & rs2
-=======
-                                        riscv.regs[f'x{self.rs2}']
->>>>>>> dcfe85859bf1e83db086cc2080c2000910e30ae2
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] & riscv.regs[f'x{self.rs2}']
+            if riscv.DEBUG:
+                print(f"x{self.rd} ({riscv.regs[f'x{self.rd}']})  = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) AND x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
 
         else:
             print("Fatal!! Unknown instruction", self.__str__())

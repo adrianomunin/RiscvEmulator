@@ -1,4 +1,6 @@
 .text
 .global _start; _start:
 
-xor x1,x2,x3
+addi x1,zero,5
+addi x2,zero,10
+xor x3,x2,x1

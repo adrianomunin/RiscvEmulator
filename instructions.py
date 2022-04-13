@@ -13,8 +13,16 @@ def signed_to_unsigned(data):
 def signal_extends(qtdDest, num):
     maskTarget = 0
     maskOrigin = 0
+    qtdOrigin = 0
 
-    qtdOrigin = math.log2(num)
+    try:
+        if num != 0:
+            qtdOrigin = math.log2(num)
+    except Exception as ex:
+        template = "signal_extends - An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        print(message)
+
     qtdOrigin = int(qtdOrigin) + 1
 
     if num >= 0:
@@ -108,7 +116,8 @@ class RType:
 class IType:
     OPCODE = [int(0b00000000000000000000000000100111),
               int(0b00000000000000000000000000000011),
-              int(0b00000000000000000000000000010011)]
+              int(0b00000000000000000000000000010011),
+              int(0b00000000000000000000000001100111)]
 
     def __init__(self, opcode, rd, rs1, funct3, imm) -> None:
         self.opcode = opcode
@@ -207,6 +216,10 @@ class IType:
             # loads 16 bists from memory with zero extends
             sixtenBitsValue = riscv.memory[signal_extends(12, riscv.regs[self.rs1])] & 0b00000000000000001111111111111111
             riscv.regs[self.rd] = sixtenBitsValue
+
+        elif self.funct3 == 000 and self.opcode == 0b00000000000000000000000001100111: #JALR
+            riscv.regs[self.rd] = riscv.regs['pc'] + 4
+            riscv.regs['pc'] = (riscv.regs[self.rs1] + self.imm) & ~1
 
         else:
             print("Fatal!! Unknown instruction", self.__str__())
@@ -316,7 +329,8 @@ class BType:
 
 
 class UType:
-    OPCODE = [int(0b00000000000000000000000000110111)]
+    OPCODE = [int(0b00000000000000000000000000110111),
+              int(0b00000000000000000000000000010111)]
 
     def __init__(self, opcode, rd, imm) -> None:
         self.opcode = opcode
@@ -331,7 +345,13 @@ class UType:
         print("\n")
 
     def execute(self, riscv):
-        pass
+        if self.opcode == 0b00000000000000000000000000110111: #LUI
+            riscv.regs[self.rd] = self.imm << 12
+        elif self.opcode == 0b00000000000000000000000000110111: #AUIPC
+            riscv.regs[self.rd] = riscv.regs['pc'] + (self.imm << 12)
+        else:
+            print("Fatal!! Unknown instruction", self.__str__())
+            exit(-1)
 
     @staticmethod
     def parse_instruction(instruction):
@@ -360,7 +380,12 @@ class JType:
         print("\n")
 
     def execute(self, riscv):
-        pass
+        if self.opcode == 0b00000000000000000000000001101111: #JAL
+            riscv.regs[self.rd] = riscv.regs['pc'] + 4
+            riscv.regs['pc'] = riscv.regs['pc'] + self.imm
+        else:
+            print("Fatal!! Unknown instruction", self.__str__())
+            exit(-1)
 
     @staticmethod
     def parse_instruction(instruction):

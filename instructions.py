@@ -9,6 +9,12 @@ def signed_to_unsigned(data):
     return data
 
 
+def unsigned_to_signed(data):
+    data = ~data
+    data += 1
+    return data
+
+
 def signal_extends(qtdDest, num):
     maskTarget = 0
     maskOrigin = 0
@@ -209,16 +215,19 @@ class IType:
 
     def execute(self, riscv):
         # Executa a instrução
+        if (self.imm & 0b100000000000) >> 11 == 1:
+            t = ~self.imm & 0b0111111111111
+            self.imm = ~t
+
         if self.funct3 == 0b000 and self.opcode == 0b00000000000000000000000000010011:  # ADDI
             print(
                 f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) + {self.imm}\n")
-            riscv.regs[f"x{self.rd}"] = riscv.regs[f"x{signal_extends(12, self.rs1)}"] + \
+            riscv.regs[f"x{self.rd}"] = riscv.regs[f"x{self.rs1}"] + \
                 self.imm
 
         elif self.funct3 == 0b010 and self.opcode == 0b00000000000000000000000000010011:  # SLTI
             # SLTI (set less than immediate) places the value 1 in register rd if register rs1 is less than the sign-
             # extended immediate when both are treated as signed numbers, else 0 is written to rd.
-
             if self.rs1 < self.imm:
                 riscv.regs[f'x{self.rd}'] = 0b1
             else:
@@ -343,8 +352,8 @@ class SType:
             riscv.memory[signal_extends(12, riscv.regs[f'x{self.rs1}'])] = riscv.regs[
                 self.rs2] & 0b00000000000000001111111111111111
         elif self.funct3 == 0b010 and self.opcode == 0b00000000000000000000000000100011:  # SW
-            riscv.memory[signal_extends(
-                12, riscv.regs[f'x{self.rs1}'])] = riscv.regs[f'x{self.rs2}']
+            tes = signal_extends(12, self.imm) + riscv.regs[f'x{self.rs1}']
+            riscv.memory[tes] = riscv.regs[f'x{self.rs2}']
 
     @staticmethod
     def parse_instruction(instruction):
@@ -385,7 +394,7 @@ class BType:
             if riscv.regs[f"x{self.rs1}"] != riscv.regs[f"x{self.rs2}"]:
                 riscv.regs['pc'] = riscv.regs['pc'] + int(self.imm/4)-1
         if self.funct3 == 0b100:  # BLT
-            if riscv.regs[f"x{self.rs1}"] < riscv.regs[f"x{self.rs2}"]:
+            if riscv.regs[f"x{self.rs2}"] < riscv.regs[f"x{self.rs1}"]:
                 riscv.regs['pc'] = riscv.regs['pc'] + int(self.imm/4)-1
         if self.funct3 == 0b101:  # BGE
             if riscv.regs[f"x{self.rs1}"] >= riscv.regs[f"x{self.rs2}"]:

@@ -373,6 +373,10 @@ class BType:
         self.imm = imm
 
     def execute(self, riscv):
+
+        if (self.imm & 0b1000000000000) >> 12 == 1:
+            t = ~self.imm & 0b0111111111111
+            self.imm = ~t
         # Executa a instrução
         if self.funct3 == 0b000:  # BEQ
             if riscv.regs[f'x{self.rs1}'] == riscv.regs[f"x{self.rs2}"]:

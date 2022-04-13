@@ -70,6 +70,7 @@ class RISCV:
                 if self.DEBUG:
                     print(f"Instrução carregada na memoria: mem[{mem_last}] ", bin(
                         binary_data).replace('0b', '').zfill(32))
+
         if(self.regs['pc'] != -1):
             self._run()
 
@@ -137,6 +138,7 @@ class RISCV:
             print("Fatal!! Unknown instruction", bin(
                 instruction).replace('0b', '').zfill(32))
             exit(-1)
+
         return pc
 
     # Exibe o conteudo da memoria

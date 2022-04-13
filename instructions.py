@@ -69,6 +69,19 @@ class RType:
                bin(self.funct3).replace('0b', '').zfill(3) + \
                bin(self.funct7).replace('0b', '').zfill(7)
 
+    def msb(self, i):
+        a = i[0:12]
+        c = int(a,2)
+        return c
+        
+    def sra(self,x,n,m):
+        if x & 2**(n-1) != 0:  # MSB is 1, i.e. x is negative
+            filler = int('1'*m + '0'*(n-m),2)
+            x = (x >> m) | filler  # fill in 0's with 1's
+            return x
+        else:
+            return x >> m
+
     def execute(self, riscv):
         # Executa a instrução
         rs1 = riscv.regs[f'x{self.rs1}']
@@ -78,7 +91,7 @@ class RType:
             riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] + riscv.regs[f'x{self.rs2}']
             if riscv.DEBUG:
                 print(f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) + x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")    
-                
+
         elif self.funct3 == 0b000 and self.funct7 == 0b0100000:  # SUB OK
             riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - riscv.regs[f'x{self.rs2}']
             if riscv.DEBUG:
@@ -89,13 +102,19 @@ class RType:
             if riscv.DEBUG:
                 print(f"x{self.rd} ({riscv.regs[f'x{self.rd}']})  = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) << x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
 
-        elif self.funct3 == 0b010 and self.funct7 == 0b0000000:  # SLT
-            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
-                riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b010 and self.funct7 == 0b0000000:  # SLT OK
+            if riscv.regs[f'x{self.rs1}'] < riscv.regs[f'x{self.rs2}']:
+                riscv.regs[f'x{self.rd}'] = 0b1
+            else:
+                riscv.regs[f'x{self.rd}'] = 0b0
 
-        elif self.funct3 == 0b011 and self.funct7 == 0b0000000:  # SLTU
-            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
-                riscv.regs[f'x{self.rs2}']
+        elif self.funct3 == 0b011 and self.funct7 == 0b0000000:  # SLTU OK
+            unsignedRS1 = ctypes.c_uint8(riscv.regs[f'x{self.rs1}'])
+            unsignedRS2 = ctypes.c_uint8(riscv.regs[f'x{self.rs2}'])
+            if unsignedRS1 < unsignedRS2:
+                riscv.regs[f'x{self.rd}'] = 0b1
+            else:
+                riscv.regs[f'x{self.rd}'] = 0b0
 
         elif self.funct3 == 0b100 and self.funct7 == 0b0000000:  # XOR OK
             riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] ^ riscv.regs[f'x{self.rs2}']
@@ -108,10 +127,7 @@ class RType:
                 print(f"x{self.rd} ({riscv.regs[f'x{self.rd}']})  = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) >> x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
 
         elif self.funct3 == 0b101 and self.funct7 == 0b0100000:  # SRA
-            if riscv.DEBUG:
-                print(f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) - x{self.rs2} ({riscv.regs[f'x{self.rs2}']})\n")
-            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] - \
-                riscv.regs[f'x{self.rs2}']
+            riscv.regs[f'x{self.rd}'] = self.sra(riscv.regs[f'x{self.rs1}'],16,riscv.regs[f'x{self.rs2}'])
 
         elif self.funct3 == 0b110 and self.funct7 == 0b0000000:  # OR OK
             riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] | riscv.regs[f'x{self.rs2}']
@@ -178,75 +194,75 @@ class IType:
         # Executa a instrução
         if self.funct3 == 0b000 and self.opcode == 0b00000000000000000000000000010011:  # ADDI
             print(f"x{self.rd} = x{self.rs1} ({riscv.regs[f'x{self.rs1}']}) + {self.imm}\n")
-            riscv.regs[self.rd] = riscv.regs[signal_extends(12, self.rs1)] + self.imm
+            riscv.regs[f'x{self.rd}'] = riscv.regs[signal_extends(12, self.rs1)] + riscv.regs[f'x{self.imm}']
 
         elif self.funct3 == 0b010 and self.opcode == 0b00000000000000000000000000010011:  # SLTI
             # SLTI (set less than immediate) places the value 1 in register rd if register rs1 is less than the sign-
             # extended immediate when both are treated as signed numbers, else 0 is written to rd.
 
             if self.rs1 < self.imm:
-                riscv.regs[self.rd] = 0b1
+                riscv.regs[f'x{self.rd}'] = 0b1
             else:
-                riscv.regs[self.rd] = 0b0
+                riscv.regs[f'x{self.rd}'] = 0b0
 
         elif self.funct3 == 0b011 and self.opcode == 0b00000000000000000000000000010011:  # SLTIU
             # Same as SLTI but unsigned
-            unsignedRS1 = ctypes.c_uint8(riscv.regs[self.rs1])
-            unsignedImm = ctypes.c_uint8(riscv.regs[self.imm])
+            unsignedRS1 = ctypes.c_uint8(riscv.regs[f'x{self.rs1}'])
+            unsignedImm = ctypes.c_uint8(riscv.regs[f'x{self.imm}'])
 
             if unsignedRS1 < unsignedImm:
-                riscv.regs[self.rd] = 0b1
+                riscv.regs[f'x{self.rd}'] = 0b1
             else:
-                riscv.regs[self.rd] = 0b0
+                riscv.regs[f'x{self.rd}'] = 0b0
 
         elif self.funct3 == 0b100 and self.opcode == 0b00000000000000000000000000010011:  # XORI
-            riscv.regs[self.rd] = riscv.regs[self.rs1] ^ signal_extends(12, self.imm)
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] ^ signal_extends(12, self.imm)
 
         elif self.funct3 == 0b110 and self.opcode == 0b00000000000000000000000000010011:  # ORI
-            riscv.regs[self.rd] = riscv.regs[self.rs1] | signal_extends(12, self.imm)
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] | signal_extends(12, self.imm)
 
         elif self.funct3 == 0b111 and self.opcode == 0b00000000000000000000000000010011:  # ANDI
-            riscv.regs[self.rd] = riscv.regs[self.rs1] & signal_extends(12, self.imm)
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] & signal_extends(12, self.imm)
 
         elif self.funct3 == 0b001 and self.opcode == 0b00000000000000000000000000010011:  # SLLI
             # SLLI is a logical left shift (zeros are shifted into the lower bits)
-            riscv.regs[self.rd] = riscv.regs[self.rs1] << riscv.regs[self.imm]
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] << riscv.regs[f'x{self.imm}']
 
         elif self.funct3 == 0b101 and self.opcode == 0b00000000000000000000000000010011:  # SRLI
             # SRLI is a logical right shift (zeros are shifted into the upper bits)
-            unsignedNum = ctypes.c_uint8(riscv.regs[self.rs1])
+            unsignedNum = ctypes.c_uint8(riscv.regs[f'x{self.rs1}'])
             result = unsignedNum >> self.imm
-            riscv.regs[self.rd] = result
+            riscv.regs[f'x{self.rd}'] = result
 
         elif self.funct3 == 0b101 and self.opcode == 0b00000000000000000000000000010011:  # SRAI
             # SRAI is an arithmetic right shift (the original sign bit is copied into the vacated upper bits).
-            riscv.regs[self.rd] = riscv.regs[self.rs1] >> riscv.regs[self.imm]
+            riscv.regs[f'x{self.rd}'] = riscv.regs[f'x{self.rs1}'] >> riscv.regs[f'x{self.imm}']
 
         elif self.funct3 == 0b000 and self.opcode == 0b00000000000000000000000000000011:  # LB
             # loads 8 bists from memory
-            eightBitsValue = riscv.memory[signal_extends(12, riscv.regs[self.rs1])] & 0b00000000000000000000000011111111
+            eightBitsValue = riscv.memory[signal_extends(12, riscv.regs[f'x{self.rs1}'])] & 0b00000000000000000000000011111111
             eightBitsValue = signal_extends(32, eightBitsValue)
-            riscv.regs[self.rd] = eightBitsValue
+            riscv.regs[f'x{self.rd}'] = eightBitsValue
 
         elif self.funct3 == 0b001 and self.opcode == 0b00000000000000000000000000000011:  # LH
             # loads 16 bists from memory
-            sixtenBitsValue = riscv.memory[signal_extends(12, riscv.regs[self.rs1])] & 0b00000000000000001111111111111111
+            sixtenBitsValue = riscv.memory[signal_extends(12, riscv.regs[f'x{self.rs1}'])] & 0b00000000000000001111111111111111
             sixtenBitsValue = signal_extends(32, sixtenBitsValue)
-            riscv.regs[self.rd] = sixtenBitsValue
+            riscv.regs[f'x{self.rd}'] = sixtenBitsValue
 
         elif self.funct3 == 0b010 and self.opcode == 0b00000000000000000000000000000011:  # LW
             # loads 32 bists from memory
-            riscv.regs[self.rd] = riscv.memory[signal_extends(12, riscv.regs[self.rs1])]
+            riscv.regs[f'x{self.rd}'] = riscv.memory[signal_extends(12, riscv.regs[f'x{self.rs1}'])]
 
         elif self.funct3 == 0b100 and self.opcode == 0b00000000000000000000000000000011:  # LBU
             # loads 8 bists from memory with zero extends
-            eightBitsValue = riscv.memory[signal_extends(12, riscv.regs[self.rs1])] & 0b00000000000000000000000011111111
-            riscv.regs[self.rd] = eightBitsValue
+            eightBitsValue = riscv.memory[signal_extends(12, riscv.regs[f'x{self.rs1}'])] & 0b00000000000000000000000011111111
+            riscv.regs[f'x{self.rd}'] = eightBitsValue
 
         elif self.funct3 == 0b101 and self.opcode == 0b00000000000000000000000000000011:  # LBU
             # loads 16 bists from memory with zero extends
-            sixtenBitsValue = riscv.memory[signal_extends(12, riscv.regs[self.rs1])] & 0b00000000000000001111111111111111
-            riscv.regs[self.rd] = sixtenBitsValue
+            sixtenBitsValue = riscv.memory[signal_extends(12, riscv.regs[f'x{self.rs1}'])] & 0b00000000000000001111111111111111
+            riscv.regs[f'x{self.rd}'] = sixtenBitsValue
 
         else:
             print("Fatal!! Unknown instruction", self.__str__())
@@ -289,14 +305,14 @@ class SType:
     def execute(self, riscv):
         # Executa a instrução
         if self.funct3 == 0b000 and self.opcode == 0b00000000000000000000000000100011:  # SB
-            riscv.memory[signal_extends(12, riscv.regs[self.rs1])] = riscv.regs[
+            riscv.memory[signal_extends(12, riscv.regs[f'x{self.rs1}'])] = riscv.regs[
                                                                          self.rs2] & 0b00000000000000000000000011111111
 
         elif self.funct3 == 0b001 and self.opcode == 0b00000000000000000000000000100011:  # SH
-            riscv.memory[signal_extends(12, riscv.regs[self.rs1])] = riscv.regs[
+            riscv.memory[signal_extends(12, riscv.regs[f'x{self.rs1}'])] = riscv.regs[
                                                                          self.rs2] & 0b00000000000000001111111111111111
         elif self.funct3 == 0b010 and self.opcode == 0b00000000000000000000000000100011:  # SW
-            riscv.memory[signal_extends(12, riscv.regs[self.rs1])] = riscv.regs[self.rs2]
+            riscv.memory[signal_extends(12, riscv.regs[f'x{self.rs1}'])] = riscv.regs[f'x{self.rs2}']
 
     @staticmethod
     def parse_instruction(instruction):

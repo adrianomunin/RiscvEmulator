@@ -19,5 +19,5 @@ try:
     print("\nMemory: (Memory values empty are hidden)")
     riscv.print_mem()
 
-except Exception:
-    print("Initialization Error")
+except Exception as e:
+    print("Initialization Error:", e)

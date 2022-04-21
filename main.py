@@ -1,4 +1,4 @@
-
+import os
 import sys
 
 from riscv import RISCV
@@ -11,7 +11,7 @@ try:
         exit(-1)
 
     riscv = RISCV()
-    riscv.DEBUG = True
+    riscv.DEBUG = False
     riscv.start(input)
 
     print("Registers: (Registers with zero are hidden)")
@@ -19,5 +19,10 @@ try:
     print("\nMemory: (Memory values empty are hidden)")
     riscv.print_mem()
 
-except Exception:
-    print("Initialization Error")
+except KeyboardInterrupt:
+    print("\nInterrupted by user")
+    exit(0)
+except Exception as e:
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(exc_type, fname, exc_tb.tb_lineno)

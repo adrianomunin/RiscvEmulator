@@ -7,6 +7,7 @@ from instructions import BType, IType, JType, RType, SType, UType
 class RISCV:
     _XLEN = 32
     DEBUG = False
+    last_instruction = -1
 
     def __init__(self) -> None:
         self.memory = [0b0] * (2**12)  # 4096 bytes
@@ -49,6 +50,7 @@ class RISCV:
 
     # Inicia um programa
     def start(self, filename):
+        mem_last = 0
         with open(filename, 'rb') as f:
             while True:
                 # Le 32 bits
@@ -57,19 +59,19 @@ class RISCV:
                     break
                 # Transforma em inteiro
                 binary_data = int.from_bytes(data, byteorder='little')
+
                 # Caso pc seja -1, o programa começa no endereço 0
                 if self.regs['pc'] == -1:
                     self.regs['pc'] = 0
-                    mem_last = 0
-                    # Salva a instrução na memória
-                    self.memory[self.regs['pc']] = binary_data
+                    self.memory[0] = binary_data
                 else:
-                    self.memory[mem_last+1] = (binary_data)
-                mem_last += 1
-
+                    self.memory[mem_last] = (binary_data)
                 if self.DEBUG:
                     print(f"Instrução carregada na memoria: mem[{mem_last}] ", bin(
                         binary_data).replace('0b', '').zfill(32))
+                mem_last += 1
+
+        self.last_instruction = mem_last-1
         if(self.regs['pc'] != -1):
             self._run()
 
@@ -77,7 +79,7 @@ class RISCV:
     def _run(self):
 
         # Enquanto houver instruções na memória
-        while self.regs['pc'] < len(self.memory):
+        while self.regs['pc'] < len(self.memory) and self.regs['pc'] <= self.last_instruction:
             # Le a instrução
             instruction = self.memory[self.regs['pc']]
             if instruction == 0:
@@ -137,6 +139,7 @@ class RISCV:
             print("Fatal!! Unknown instruction", bin(
                 instruction).replace('0b', '').zfill(32))
             exit(-1)
+
         return pc
 
     # Exibe o conteudo da memoria

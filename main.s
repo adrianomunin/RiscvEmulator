@@ -1,27 +1,9 @@
 .text
 .global _start; _start:
 
-addi x3,zero,11
-addi x2,zero,10
 
-
-end:
-add x0,x0,x0
-
-addi x3,zero,10
-addi x2,zero,10
-addi x3,zero,10
-addi x2,zero,10
-addi x3,zero,10
-addi x2,zero,10
-addi x3,zero,10
-addi x2,zero,10
-addi x3,zero,10
-addi x2,zero,10
-addi x3,zero,10
-addi x2,zero,10
-addi x3,zero,10
-addi x2,zero,10
-addi x3,zero,10
-addi x2,zero,10
-beq x3,x2,end
+addi x1,x0,32
+start:
+addi x1,x1,-2
+sw x1,5(x1)
+blt x1,x0,start

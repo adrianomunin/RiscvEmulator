@@ -11,7 +11,7 @@ try:
         exit(-1)
 
     riscv = RISCV()
-    riscv.DEBUG = True
+    riscv.DEBUG = False
     riscv.start(input)
 
     print("Registers: (Registers with zero are hidden)")

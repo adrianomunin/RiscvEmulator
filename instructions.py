@@ -19,7 +19,7 @@ def signal_extends(qtdDest, num):
     maskTarget = 0
     maskOrigin = 0
     qtdOrigin = 1
-
+    print(num)
     try:
         if num != 0:
             qtdOrigin = math.log2(num)
@@ -45,6 +45,7 @@ def signal_extends(qtdDest, num):
         result = maskTarget ^ maskOrigin
         result = result | num
 
+    print(result)
     return result
 
 
@@ -352,8 +353,12 @@ class SType:
             riscv.memory[signal_extends(12, riscv.regs[f'x{self.rs1}'])] = riscv.regs[
                 self.rs2] & 0b00000000000000001111111111111111
         elif self.funct3 == 0b010 and self.opcode == 0b00000000000000000000000000100011:  # SW
-            tes = signal_extends(12, self.imm) + riscv.regs[f'x{self.rs1}']
-            riscv.memory[tes] = riscv.regs[f'x{self.rs2}']
+            if (self.imm & 0b100000000000) >> 11 == 1:
+                t = ~self.imm & 0b0111111111111
+                self.imm = ~t
+
+            riscv.memory[riscv.regs[f'x{self.rs1}'] +
+                         self.imm] = riscv.regs[f'x{self.rs2}']
 
     @staticmethod
     def parse_instruction(instruction):
@@ -368,7 +373,7 @@ class SType:
                      (instruction & funct3_mask) >> 12,
                      (instruction & rs1_mask) >> 15,
                      (instruction & rs2_mask) >> 20,
-                     ((instruction & imm11_5_mask) >> 21) + (instruction & imm4_0_mask) >> 7)
+                     ((instruction & imm11_5_mask) >> 20) + (instruction & imm4_0_mask) >> 7)
 
 
 class BType:
